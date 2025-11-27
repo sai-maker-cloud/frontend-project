@@ -1,4 +1,5 @@
-// 1. DATA: Now with Texture Image URLs and Extra Stats
+
+
 const planetData = {
     mercury: { 
         texture: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Mercury_in_color_-_Prockter07_centered.jpg', 
@@ -59,10 +60,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(window.devicePixelRatio); // Fixes blurry planets on high-res screens
 
 // Lighting (Improved for realism)
-const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // Soft white light
 scene.add(ambientLight);
 
-const sunLight = new THREE.PointLight(0xffffff, 2, 0); // Acts as the Sun
+const sunLight = new THREE.PointLight(0xffffff, 1.2); // Acts as the Sun
 sunLight.position.set(-50, 20, 50); // Light coming from top-left
 scene.add(sunLight);
 
