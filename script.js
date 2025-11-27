@@ -1,13 +1,53 @@
-// Data for the Planets
+// 1. DATA: Now with Texture Image URLs and Extra Stats
 const planetData = {
-    mercury: { color: 0x999999, size: 0.8, temp: "167°C", moons: "0", desc: "The smallest planet in the Solar System, Mercury is closest to the Sun." },
-    venus:   { color: 0xe6c229, size: 1.5, temp: "464°C", moons: "0", desc: "Spinning in the opposite direction to most planets, Venus is the hottest planet." },
-    earth:   { color: 0x2e86de, size: 1.6, temp: "15°C", moons: "1", desc: "Our home planet is the only place we know of so far that’s inhabited by living things." },
-    mars:    { color: 0xd35400, size: 1.2, temp: "-65°C", moons: "2", desc: "Mars is a dusty, cold, desert world with a very thin atmosphere." },
-    jupiter: { color: 0xd38c5e, size: 3.5, temp: "-110°C", moons: "79", desc: "Jupiter is more than twice as massive than the other planets of our solar system combined." },
-    saturn:  { color: 0xf4d03f, size: 3.0, temp: "-140°C", moons: "82", desc: "Adorned with a dazzling, complex system of icy rings." },
-    uranus:  { color: 0x74b9ff, size: 2.2, temp: "-195°C", moons: "27", desc: "It rotates at a nearly 90-degree angle from the plane of its orbit." },
-    neptune: { color: 0x341f97, size: 2.1, temp: "-200°C", moons: "14", desc: "Neptune is dark, cold, and whipped by supersonic winds." }
+    mercury: { 
+        texture: 'https://upload.wikimedia.org/wikipedia/commons/3/30/Mercury_in_color_-_Prockter07_centered.jpg', 
+        size: 0.8, 
+        temp: "167°C", moons: "0", dist: "57.9 M km", dia: "4,879 km",
+        desc: "The smallest planet in the Solar System and the closest to the Sun." 
+    },
+    venus: { 
+        texture: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg', 
+        size: 1.5, 
+        temp: "464°C", moons: "0", dist: "108.2 M km", dia: "12,104 km",
+        desc: "Spinning in the opposite direction to most planets, Venus is the hottest planet." 
+    },
+    earth: { 
+        texture: 'https://upload.wikimedia.org/wikipedia/commons/c/cb/The_Blue_Marble_%28remastered%29.jpg', 
+        size: 1.6, 
+        temp: "15°C", moons: "1", dist: "149.6 M km", dia: "12,742 km",
+        desc: "Our home planet is the only place we know of so far that’s inhabited by living things." 
+    },
+    mars: { 
+        texture: 'https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg', 
+        size: 1.2, 
+        temp: "-65°C", moons: "2", dist: "227.9 M km", dia: "6,779 km",
+        desc: "Mars is a dusty, cold, desert world with a very thin atmosphere." 
+    },
+    jupiter: { 
+        texture: 'https://upload.wikimedia.org/wikipedia/commons/e/e2/Jupiter.jpg', 
+        size: 3.2, 
+        temp: "-110°C", moons: "79", dist: "778.5 M km", dia: "139,820 km",
+        desc: "Jupiter is more than twice as massive than the other planets of our solar system combined." 
+    },
+    saturn: { 
+        texture: 'https://upload.wikimedia.org/wikipedia/commons/b/b4/Saturn_%28planet%29_large.jpg', 
+        size: 2.9, 
+        temp: "-140°C", moons: "82", dist: "1.4 B km", dia: "116,460 km",
+        desc: "Adorned with a dazzling, complex system of icy rings, Saturn is unique in our Solar System." 
+    },
+    uranus: { 
+        texture: 'https://upload.wikimedia.org/wikipedia/commons/3/3d/Uranus2.jpg', 
+        size: 2.2, 
+        temp: "-195°C", moons: "27", dist: "2.9 B km", dia: "50,724 km",
+        desc: "It rotates at a nearly 90-degree angle from the plane of its orbit." 
+    },
+    neptune: { 
+        texture: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Neptune_Full.jpg', 
+        size: 2.1, 
+        temp: "-200°C", moons: "14", dist: "4.5 B km", dia: "49,244 km",
+        desc: "Neptune is dark, cold, and whipped by supersonic winds." 
+    }
 };
 
 // --- THREE.JS SETUP --- //
@@ -16,129 +56,107 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#webgl'), alpha: true, antialias: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(window.devicePixelRatio); // Fixes blurry planets on high-res screens
 
-// 1. Create the Planet (Sphere)
-// We start with Earth
-const geometry = new THREE.SphereGeometry(1, 64, 64);
-const material = new THREE.MeshPhongMaterial({ 
-    color: 0x2e86de,
-    shininess: 20,
-    specular: 0x111111 
+// Lighting (Improved for realism)
+const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+scene.add(ambientLight);
+
+const sunLight = new THREE.PointLight(0xffffff, 2, 0); // Acts as the Sun
+sunLight.position.set(-50, 20, 50); // Light coming from top-left
+scene.add(sunLight);
+
+// Texture Loader
+const textureLoader = new THREE.TextureLoader();
+
+// Initial Planet (Earth)
+const geometry = new THREE.SphereGeometry(1, 128, 128); // Higher segments for smoothness
+const material = new THREE.MeshStandardMaterial({ 
+    map: textureLoader.load(planetData.earth.texture) 
 });
 const planet = new THREE.Mesh(geometry, material);
+
+// Position Planet
+planet.position.set(2.5, 0, 0); 
 scene.add(planet);
 
-// Position Planet to the right
-planet.position.x = 2; 
-
-// 2. Create Starfield Background
+// Stars
 const starGeometry = new THREE.BufferGeometry();
-const starCount = 2000;
+const starCount = 3000;
 const posArray = new Float32Array(starCount * 3);
-
 for(let i = 0; i < starCount * 3; i++) {
-    posArray[i] = (Math.random() - 0.5) * 50; // Spread stars
+    posArray[i] = (Math.random() - 0.5) * 60;
 }
-
 starGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-const starMaterial = new THREE.PointsMaterial({ size: 0.02, color: 0xffffff });
+const starMaterial = new THREE.PointsMaterial({ size: 0.01, color: 0xffffff, transparent: true, opacity: 0.8 });
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
 
-// 3. Lighting
-const ambientLight = new THREE.AmbientLight(0x333333);
-scene.add(ambientLight);
-
-const pointLight = new THREE.PointLight(0xffffff, 1.5);
-pointLight.position.set(5, 3, 5);
-scene.add(pointLight);
-
-// Camera Position
 camera.position.z = 5;
 
 // Animation Loop
 function animate() {
     requestAnimationFrame(animate);
-
-    // Rotate Planet
-    planet.rotation.y += 0.002;
     
-    // Rotate Stars slowly
-    stars.rotation.y -= 0.0005;
+    // Constant gentle rotation
+    planet.rotation.y += 0.0015;
+    stars.rotation.y -= 0.0002;
 
     renderer.render(scene, camera);
 }
 animate();
 
-// --- UI INTERACTION --- //
+// --- UPDATE LOGIC (Smooth Transitions) --- //
 
-// Handle Window Resize
-window.addEventListener('resize', () => {
-    camera.aspect = window.innerWidth / window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// Search Functionality
-const searchInput = document.getElementById('searchBar');
-const searchBtn = document.getElementById('searchBtn');
-
-// DOM Elements to update
 const domName = document.getElementById('planet-name');
 const domDesc = document.getElementById('planet-desc');
 const domTemp = document.getElementById('planet-temp');
 const domMoons = document.getElementById('planet-moons');
+const domDia = document.getElementById('planet-dia');
+const domDist = document.getElementById('planet-dist');
 
 function updatePlanet(name) {
-    const key = name.toLowerCase();
+    const key = name.toLowerCase().trim();
     const data = planetData[key];
 
     if (data) {
-        // Update 3D Model
-        planet.material.color.setHex(data.color);
-        
-        // Animate Scale (Simple transition)
-        // We reset scale first to avoid accumulation issues
-        planet.scale.set(1, 1, 1); 
-        planet.scale.multiplyScalar(data.size);
+        // 1. Load New Texture
+        textureLoader.load(data.texture, (texture) => {
+            planet.material.map = texture;
+            planet.material.needsUpdate = true;
+        });
 
-        // Update Text
+        // 2. Smooth Animation (Using GSAP)
+        // Shrink slightly
+        gsap.to(planet.scale, { duration: 0.3, x: 0, y: 0, z: 0, onComplete: () => {
+            // Once shrunk, resize to new target size and pop back up
+            gsap.to(planet.scale, { duration: 0.8, x: data.size, y: data.size, z: data.size, ease: "elastic.out(1, 0.5)" });
+        }});
+
+        // Rotate camera slightly for effect
+        gsap.fromTo(planet.rotation, {y: planet.rotation.y}, {duration: 1, y: planet.rotation.y + 2, ease: "power2.out"});
+
+        // 3. Update Text
         domName.innerText = name.toUpperCase();
         domDesc.innerText = data.desc;
         domTemp.innerText = data.temp;
         domMoons.innerText = data.moons;
+        domDia.innerText = data.dia;
+        domDist.innerText = data.dist;
+
     } else {
-        alert("Planet not found! Try 'Mars' or 'Jupiter'.");
+        alert("Planet not found! Try 'Earth', 'Mars', or 'Saturn'.");
     }
 }
 
-searchBtn.addEventListener('click', () => {
-    updatePlanet(searchInput.value);
+// Search Listeners
+document.getElementById('searchBtn').addEventListener('click', () => {
+    updatePlanet(document.getElementById('searchBar').value);
 });
 
-searchInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        updatePlanet(searchInput.value);
-    }
+document.getElementById('searchBar').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') updatePlanet(e.target.value);
 });
 
-// Click on Planet (Raycasting)
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-
-window.addEventListener('click', (event) => {
-    // Calculate mouse position in normalized device coordinates
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
-
-    // Raycast
-    raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects([planet]);
-
-    if (intersects.length > 0) {
-        // Spin faster on click
-        planet.rotation.y += 0.5;
-        alert(`You clicked on ${domName.innerText}!`);
-    }
-});
+// Initial Scale Set
+planet.scale.set(1.6, 1.6, 1.6);
