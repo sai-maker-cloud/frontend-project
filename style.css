@@ -1,0 +1,161 @@
+:root {
+    --primary: #00d2ff;
+    --glass: rgba(255, 255, 255, 0.05);
+    --glass-border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Exo 2', sans-serif;
+    background-color: #050505;
+    color: white;
+    overflow: hidden; /* Hide scrollbars for full immersion */
+}
+
+/* 3D Canvas acts as background */
+#webgl {
+    position: fixed;
+    top: 0;
+    left: 0;
+    outline: none;
+    z-index: 1;
+}
+
+/* UI Overlay stays on top of Canvas */
+nav, .hero-section {
+    position: relative;
+    z-index: 2;
+}
+
+/* Navigation */
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px 50px;
+}
+
+.logo {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: white;
+}
+
+.nav-links a {
+    color: #aaa;
+    text-decoration: none;
+    margin-left: 30px;
+    font-weight: 700;
+    transition: 0.3s;
+}
+
+.nav-links a:hover {
+    color: var(--primary);
+}
+
+/* Main Layout */
+.hero-section {
+    display: flex;
+    height: 80vh;
+    align-items: center;
+    padding: 0 50px;
+}
+
+.content-left {
+    width: 40%;
+    padding-right: 50px;
+}
+
+.content-right {
+    width: 60%;
+    /* The planet will sit here in 3D space */
+}
+
+/* Typography */
+h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 80px;
+    line-height: 1;
+    margin-bottom: 20px;
+    background: linear-gradient(to right, #fff, #aaa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+p {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #ccc;
+    margin-bottom: 40px;
+}
+
+/* Glass Inputs */
+.search-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 50px;
+}
+
+input {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    padding: 15px 25px;
+    border-radius: 30px;
+    color: white;
+    width: 100%;
+    font-family: inherit;
+    font-size: 16px;
+    backdrop-filter: blur(10px);
+    outline: none;
+}
+
+button {
+    background: var(--primary);
+    border: none;
+    padding: 15px 30px;
+    border-radius: 30px;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(0, 210, 255, 0.5);
+}
+
+/* Stats Cards */
+.stats-row {
+    display: flex;
+    gap: 20px;
+}
+
+.stat-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    padding: 20px;
+    border-radius: 15px;
+    width: 150px;
+    backdrop-filter: blur(10px);
+}
+
+.stat-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #888;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.stat-card h3 {
+    font-size: 24px;
+    color: var(--primary);
+}
