@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SpaceEdu | Solar System</title>
+    <title>SpaceEdu | Realistic Solar System</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;700&family=Orbitron:wght@400;900&display=swap" rel="stylesheet">
 </head>
@@ -14,8 +14,8 @@
     <nav>
         <div class="logo">SpaceEdu</div>
         <div class="nav-links">
-            <a href="#">Planets</a>
-            <a href="#">Moons</a>
+            <a href="#">System</a>
+            <a href="#">Gallery</a>
             <a href="#">About</a>
         </div>
     </nav>
@@ -26,27 +26,33 @@
             <p id="planet-desc">Our home. It is the only place we know of so far that’s inhabited by living things.</p>
             
             <div class="search-container">
-                <input type="text" id="searchBar" placeholder="Search planet (e.g. Mars)...">
+                <input type="text" id="searchBar" placeholder="Type planet name (e.g. Saturn)">
                 <button id="searchBtn">EXPLORE</button>
             </div>
 
-            <div class="stats-row">
+            <div class="stats-grid">
                 <div class="stat-card">
-                    <span class="stat-label">Temperature</span>
+                    <span class="stat-label">Avg Temp</span>
                     <h3 id="planet-temp">15°C</h3>
                 </div>
                 <div class="stat-card">
                     <span class="stat-label">Moons</span>
                     <h3 id="planet-moons">1</h3>
                 </div>
+                <div class="stat-card">
+                    <span class="stat-label">Diameter</span>
+                    <h3 id="planet-dia">12,742 km</h3>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Dist. from Sun</span>
+                    <h3 id="planet-dist">149.6 M km</h3>
+                </div>
             </div>
         </div>
-
-        <div class="content-right">
-            </div>
     </main>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
