@@ -1,4 +1,5 @@
-const planetData = {
+
+    const planetData = {
     mercury: { 
         texture: 'https://raw.githubusercontent.com/yuruy/solar-system/master/images/mercury.jpg', 
         size: 0.8, 
@@ -49,12 +50,14 @@ const planetData = {
     }
 };
 
+THREE.Cache.enabled = true;
+
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('#webgl'), alpha: true, antialias: true });
 
 renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const ambientLight = new THREE.AmbientLight(0x404040, 0.5);
 scene.add(ambientLight);
@@ -64,24 +67,32 @@ sunLight.position.set(-50, 20, 50);
 scene.add(sunLight);
 
 const textureLoader = new THREE.TextureLoader();
+textureLoader.setCrossOrigin("anonymous");
 
-const geometry = new THREE.SphereGeometry(1, 128, 128);
-const material = new THREE.MeshStandardMaterial({ 
-    map: textureLoader.load(planetData.earth.texture) 
-});
+const planetTextures = {};
+
+for (let key in planetData) {
+    planetTextures[key] = textureLoader.load(planetData[key].texture);
+}
+
+const geometry = new THREE.SphereGeometry(1, 64, 64);
+const material = new THREE.MeshStandardMaterial({ map: planetTextures.earth });
 const planet = new THREE.Mesh(geometry, material);
 
-planet.position.set(2.5, 0, 0); 
+planet.position.set(2.5, 0, 0);
+planet.scale.set(1.6, 1.6, 1.6);
 scene.add(planet);
 
 const starGeometry = new THREE.BufferGeometry();
-const starCount = 3000;
+const starCount = 1000;
 const posArray = new Float32Array(starCount * 3);
+
 for(let i = 0; i < starCount * 3; i++) {
     posArray[i] = (Math.random() - 0.5) * 60;
 }
+
 starGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-const starMaterial = new THREE.PointsMaterial({ size: 0.01, color: 0xffffff, transparent: true, opacity: 0.8 });
+const starMaterial = new THREE.PointsMaterial({ size: 0.01, color: 0xffffff });
 const stars = new THREE.Points(starGeometry, starMaterial);
 scene.add(stars);
 
@@ -93,6 +104,7 @@ function animate() {
     stars.rotation.y -= 0.0002;
     renderer.render(scene, camera);
 }
+
 animate();
 
 const domName = document.getElementById('planet-name');
@@ -107,16 +119,16 @@ function updatePlanet(name) {
     const data = planetData[key];
 
     if (data) {
-        textureLoader.load(data.texture, (texture) => {
-            planet.material.map = texture;
-            planet.material.needsUpdate = true;
+        planet.material.map = planetTextures[key];
+        planet.material.needsUpdate = true;
+
+        gsap.to(planet.scale, { duration: 0.3, x: 0, y: 0, z: 0,
+            onComplete: () => {
+                gsap.to(planet.scale, { duration: 0.8, x: data.size, y: data.size, z: data.size, ease: "elastic.out(1, 0.5)" });
+            }
         });
 
-        gsap.to(planet.scale, { duration: 0.3, x: 0, y: 0, z: 0, onComplete: () => {
-            gsap.to(planet.scale, { duration: 0.8, x: data.size, y: data.size, z: data.size, ease: "elastic.out(1, 0.5)" });
-        }});
-
-        gsap.fromTo(planet.rotation, {y: planet.rotation.y}, {duration: 1, y: planet.rotation.y + 2, ease: "power2.out"});
+        gsap.fromTo(planet.rotation, {y: planet.rotation.y}, {duration: 1, y: planet.rotation.y + 2});
 
         domName.innerText = name.toUpperCase();
         domDesc.innerText = data.desc;
@@ -126,7 +138,7 @@ function updatePlanet(name) {
         domDist.innerText = data.dist;
 
     } else {
-        alert("Planet not found! Try 'Earth', 'Mars', or 'Saturn'.");
+        alert("Planet not found! Try Earth, Mars, Jupiter...");
     }
 }
 
@@ -138,4 +150,9 @@ document.getElementById('searchBar').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') updatePlanet(e.target.value);
 });
 
-planet.scale.set(1.6, 1.6, 1.6);
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+});
