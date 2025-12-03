@@ -13,84 +13,123 @@ THREE.Cache.enabled = true;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 1000);
-const renderer = new THREE.WebGLRenderer({canvas:document.querySelector('#webgl'),alpha:true,antialias:true});
+camera.position.z = 5;
+
+const renderer = new THREE.WebGLRenderer({
+    canvas: document.querySelector('#webgl'),
+    alpha: true,
+    antialias: true
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
 
-const ambientLight = new THREE.AmbientLight(0xffffff,0.5);
-scene.add(ambientLight);
-const sunLight = new THREE.PointLight(0xffffff,1.3);
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const sunLight = new THREE.PointLight(0xffffff, 1.3);
 sunLight.position.set(-40,20,40);
 scene.add(sunLight);
 
 const loader = new THREE.TextureLoader();
-loader.crossOrigin = "";
+loader.setCrossOrigin("anonymous");
 
 const planetTextures = {};
-Object.keys(planetData).forEach(k=>{
-    planetTextures[k] = loader.load(planetData[k].texture);
+let loadedCount = 0;
+const textureKeys = Object.keys(planetData);
+
+textureKeys.forEach(key => {
+    loader.load(
+        planetData[key].texture,
+        texture => {
+            planetTextures[key] = texture;
+            loadedCount++;
+            if (loadedCount === textureKeys.length) startScene();
+        }
+    );
 });
 
-const geometry = new THREE.SphereGeometry(1,48,48);
-const material = new THREE.MeshStandardMaterial({map:planetTextures.earth});
-const planet = new THREE.Mesh(geometry,material);
-planet.position.set(2.5,0,0);
-planet.scale.set(1.6,1.6,1.6);
+const geometry = new THREE.SphereGeometry(1, 48, 48);
+const placeholderMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+const planet = new THREE.Mesh(geometry, placeholderMaterial);
+planet.position.set(2.5, 0, 0);
 scene.add(planet);
 
 const starGeometry = new THREE.BufferGeometry();
 const starCount = 700;
-const starPositions = new Float32Array(starCount*3);
-for(let i=0;i<starCount*3;i++) starPositions[i]=(Math.random()-0.5)*50;
-starGeometry.setAttribute('position',new THREE.BufferAttribute(starPositions,3));
-const stars = new THREE.Points(starGeometry,new THREE.PointsMaterial({size:0.015,color:0xffffff}));
+const starPositions = new Float32Array(starCount * 3);
+
+for (let i = 0; i < starCount * 3; i++) {
+    starPositions[i] = (Math.random() - 0.5) * 50;
+}
+starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3));
+
+const stars = new THREE.Points(
+    starGeometry,
+    new THREE.PointsMaterial({ size: 0.015, color: 0xffffff })
+);
 scene.add(stars);
 
-camera.position.z=5;
+function startScene() {
+    planet.material = new THREE.MeshStandardMaterial({
+        map: planetTextures.earth
+    });
+    planet.scale.set(1.6, 1.6, 1.6);
+    animate();
+}
 
-function animate(){
+function animate() {
     requestAnimationFrame(animate);
-    planet.rotation.y+=0.002;
-    stars.rotation.y-=0.00015;
-    renderer.render(scene,camera);
-}
-animate();
-
-const domName=document.getElementById('planet-name');
-const domDesc=document.getElementById('planet-desc');
-const domTemp=document.getElementById('planet-temp');
-const domMoons=document.getElementById('planet-moons');
-const domDia=document.getElementById('planet-dia');
-const domDist=document.getElementById('planet-dist');
-
-function updatePlanet(name){
-    const key=name.toLowerCase().trim();
-    const data=planetData[key];
-    if(!data){alert("Planet not found.");return;}
-
-    planet.material.map=planetTextures[key];
-    planet.material.needsUpdate=true;
-
-    gsap.to(planet.scale,{duration:0.25,x:0,y:0,z:0,onComplete:()=>{
-        gsap.to(planet.scale,{duration:0.7,x:data.size,y:data.size,z:data.size,ease:"elastic.out(1,0.5)"});
-    }});
-
-    gsap.to(planet.rotation,{duration:1,y:planet.rotation.y+2});
-
-    domName.innerText=name.toUpperCase();
-    domDesc.innerText=data.desc;
-    domTemp.innerText=data.temp;
-    domMoons.innerText=data.moons;
-    domDia.innerText=data.dia;
-    domDist.innerText=data.dist;
+    planet.rotation.y += 0.002;
+    stars.rotation.y -= 0.00015;
+    renderer.render(scene, camera);
 }
 
-document.getElementById('searchBtn').addEventListener('click',()=>updatePlanet(document.getElementById('searchBar').value));
-document.getElementById('searchBar').addEventListener('keypress',e=>{if(e.key==="Enter")updatePlanet(e.target.value);});
+const domName = document.getElementById('planet-name');
+const domDesc = document.getElementById('planet-desc');
+const domTemp = document.getElementById('planet-temp');
+const domMoons = document.getElementById('planet-moons');
+const domDia = document.getElementById('planet-dia');
+const domDist = document.getElementById('planet-dist');
 
-window.addEventListener('resize',()=>{
-    camera.aspect=window.innerWidth/window.innerHeight;
+function updatePlanet(name) {
+    const key = name.toLowerCase().trim();
+    const data = planetData[key];
+    if (!data) { alert("Planet not found."); return; }
+
+    planet.material.map = planetTextures[key];
+    planet.material.needsUpdate = true;
+
+    gsap.to(planet.scale, { duration: 0.2, x: 0, y: 0, z: 0,
+        onComplete: () => {
+            gsap.to(planet.scale, {
+                duration: 0.7,
+                x: data.size,
+                y: data.size,
+                z: data.size,
+                ease: "elastic.out(1,0.5)"
+            });
+        }
+    });
+
+    gsap.to(planet.rotation, { duration: 1, y: planet.rotation.y + 2 });
+
+    domName.innerText = name.toUpperCase();
+    domDesc.innerText = data.desc;
+    domTemp.innerText = data.temp;
+    domMoons.innerText = data.moons;
+    domDia.innerText = data.dia;
+    domDist.innerText = data.dist;
+}
+
+document.getElementById('searchBtn')
+    .addEventListener('click', () => updatePlanet(document.getElementById('searchBar').value));
+
+document.getElementById('searchBar')
+    .addEventListener('keypress', e => {
+        if (e.key === "Enter") updatePlanet(e.target.value);
+    });
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth,window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio,1.5));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 });
